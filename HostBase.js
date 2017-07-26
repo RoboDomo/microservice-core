@@ -2,9 +2,6 @@ const debug           = require('debug')('HostBase'),
       MQTT            = require('mqtt'),
       StatefulEmitter = require('./StatefulEmitter')
 
-function quote(s) {
-    return '"' + s + '"'
-}
 class HostBase extends StatefulEmitter {
     constructor(host, topic) {
         super()
@@ -39,7 +36,9 @@ class HostBase extends StatefulEmitter {
     publish(key, value) {
         const topic = this.topicRoot + key
         debug('publish', 'topic', topic, 'key', key, 'value', value)
-        this.client.publish(topic, String(value))
+        this.client.publish(topic, String(value), {
+            retain: true
+        })
     }
 
     exception(e) {
