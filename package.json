@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/autodomo/microservice-core#readme",
   "dependencies": {
-    "debug": "^2.6.8"
+    "debug": "^2.6.8",
+    "mqtt": "^2.9.3"
   }
 }

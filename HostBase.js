@@ -1,47 +1,38 @@
-/**
- * Created by mschwartz on 7/10/17.
- */
+const debug           = require('debug')('HostBase'),
+      MQTT            = require('mqtt'),
+      StatefulEmitter = require('./StatefulEmitter')
 
-const debug        = require('debug')('HostBase'),
-      StatefulEmitter = require('../lib/StatefulEmitter'),
-      WebSocket    = require('../lib/WebSocket')
-
+function quote(s) {
+    return '"' + s + '"'
+}
 class HostBase extends StatefulEmitter {
-    // TODO: take a config
-    // TODO: rename device to topic?
-    constructor(topic) {
+    constructor(host, topic) {
         super()
-        this.topic = topic
-    }
+        this.host            = host
+        this.topic           = topic
+        this.topicRoot       = topic + '/'
+        this.topicRootLength = this.topicRoot.length
 
-    setModel(model) {
-        this.model = model
-    }
-
-    publish() {
-        if (WebSocket.publish(this.topic, this.state)) {
-            // debug(this.topic, 'publish')
-            this.emit('publish')
-
-            const model = this.model
-            if (model) {
-                setTimeout(async () => {
-                    try {
-                        await model.create(Object.assign({
-                            timestamp: new Date(),
-                            name: this.device,
-                        }, this.state))
-                    }
-                    catch (e) {
-                        console.log(this.topic, 'db error', e)
-                    }
-                }, 1)
+        this.client = MQTT.connect(this.host)
+        this.client.subscribe(this.topicRoot + '#')
+        this.on('statechange', (newState, oldState) => {
+            oldState = oldState || {}
+            for (const key in newState) {
+                if (oldState[key] === 'undefined' || oldState[key] !== newState[key]) {
+                    debug('publish', key, newState[key])
+                    this.publish(key, newState[key])
+                }
             }
-        }
+        })
+
+        this.client.on('message', (topic, message) => {
+            this.command(topic.substr(this.topicRoot.length), message.toString())
+        })
     }
 
-    async asyncConfigure() {
-        Promise.resolve()
+    publish(key, value) {
+        const topic = this.topic + '/' + key
+        this.client.publish(topic, String(value))
     }
 }
 
