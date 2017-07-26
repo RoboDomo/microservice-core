@@ -27,7 +27,7 @@ class HostBase extends StatefulEmitter {
 
         this.client.on('message', async (topic, message) => {
             try {
-                console.log(topic, message)
+                debug('onMessage', topic, message)
                 await this.command(topic.substr(this.topicRoot.length), message.toString())
             }
             catch (e) {
@@ -38,10 +38,12 @@ class HostBase extends StatefulEmitter {
 
     publish(key, value) {
         const topic = this.topicRoot + key
+        debug('publish', 'topic', topic, 'key', key, 'value', value)
         this.client.publish(topic, String(value))
     }
 
     exception(e) {
+        debug('exception', this.topicRoot, this.topicRoot + 'exception', e)
         this.publish(this.topicRoot + 'exception', e)
     }
 }
