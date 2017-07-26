@@ -27,6 +27,7 @@ class HostBase extends StatefulEmitter {
 
         this.client.on('message', async (topic, message) => {
             try {
+                console.log(topic, message)
                 await this.command(topic.substr(this.topicRoot.length), message.toString())
             }
             catch (e) {
