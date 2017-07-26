@@ -19,7 +19,7 @@ class HostBase extends StatefulEmitter {
             oldState = oldState || {}
             for (const key in newState) {
                 if (oldState[key] !== 'undefined' && oldState[key] !== newState[key]) {
-                    debug('publish', key, newState[key])
+                    debug('publish', 'key', key, typeof key, 'newState', newState[key], typeof newState[key])
                     this.publish(key, newState[key])
                 }
             }
