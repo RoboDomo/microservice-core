@@ -25,14 +25,23 @@ class HostBase extends StatefulEmitter {
             }
         })
 
-        this.client.on('message', (topic, message) => {
-            this.command(topic.substr(this.topicRoot.length), message.toString())
+        this.client.on('message', async (topic, message) => {
+            try {
+                await this.command(topic.substr(this.topicRoot.length), message.toString())
+            }
+            catch (e) {
+                this.client.publish(this.topicRoot + 'exception', e.stack)
+            }
         })
     }
 
     publish(key, value) {
-        const topic = this.topic + '/' + key
+        const topic = this.topicRoot + key
         this.client.publish(topic, String(value))
+    }
+
+    exception(e) {
+        this.publish(this.topicRoot + 'exception', e)
     }
 }
 
