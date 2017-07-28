@@ -1,3 +1,4 @@
+// Microservice HostBase
 const debug           = require('debug')('HostBase'),
       MQTT            = require('mqtt'),
       StatefulEmitter = require('./StatefulEmitter')
@@ -5,45 +6,69 @@ const debug           = require('debug')('HostBase'),
 class HostBase extends StatefulEmitter {
     constructor(host, topic) {
         super()
-        this.host            = host
-        this.topic           = topic
-        this.topicRoot       = topic + '/'
-        this.topicRootLength = this.topicRoot.length
+        this.host             = host
+        this.topic            = topic
+        this.setRoot          = topic + '/set/'
+        this.setRootLength    = this.setRoot.length
+        this.statusRoot       = topic + '/status/'
+        this.statusRootLength = this.statusRoot.length
 
-        this.client = MQTT.connect(this.host)
-        this.client.subscribe(this.topicRoot + '#')
+        const client = this.client = MQTT.connect(this.host)
+        debug(this.host, this.topic, 'subscribe', (this.setRoot + '#'))
+        client.on('connect', () => {
+            debug(this.topic, 'connect', 'topic', this.setRoot + '#')
+            client.subscribe(this.setRoot + '#')
+        })
+
+        // handle statechange repoted by StatefulEmitter
         this.on('statechange', (newState, oldState) => {
             oldState = oldState || {}
-            for (const key in newState) {
-                if (oldState[key] !== 'undefined' && oldState[key] !== newState[key]) {
-                    debug('statechange', 'key', key, typeof key, 'newState', newState[key], typeof newState[key])
-                    this.publish(key, newState[key])
+            try {
+                for (const key in newState) {
+                    if (oldState[key] !== 'undefined' && oldState[key] !== newState[key]) {
+                        debug('statechange', 'key', key, typeof key, 'newState', newState[key], typeof newState[key])
+                        this.publish(key, newState[key])
+                    }
                 }
+            }
+            catch (e) {
+                this.exception(e)
             }
         })
 
-        this.client.on('message', async (topic, message) => {
+        client.on('message', async (topic, message) => {
             try {
+                if (message.indexOf('exception') !== -1) {
+                    return
+                }
                 debug('onMessage', topic, message.toString())
-                await this.command(topic.substr(this.topicRoot.length), message.toString())
+                await this.command(topic.substr(this.setRoot.length), message.toString())
             }
             catch (e) {
-                this.client.publish(this.topicRoot + 'exception', e.stack)
+                this.exception(e)
             }
         })
     }
 
     publish(key, value) {
-        const topic = this.topicRoot + key
-        debug('publish', 'topic', topic, 'key', key, 'value', value)
-        this.client.publish(topic, String(value), {
+        const topic = this.statusRoot + key,
+              o     = {}
+
+        o[key] = value
+
+        debug('publish', 'topic', topic, 'value', value)
+        this.client.publish(topic, JSON.stringify(value), {
             retain: true
         })
     }
 
     exception(e) {
-        debug('exception', this.topicRoot, this.topicRoot + 'exception', e)
-        this.publish(this.topicRoot + 'exception', e)
+        debug('exception', this.setRoot, this.setRoot + 'exception', e)
+        // we don't want to retain a bunch of exception messages
+        // TODO: clear exception message on app start
+        this.client.publish(this.statusRoot + 'exception', e, {
+            retain: false
+        })
     }
 }
 
