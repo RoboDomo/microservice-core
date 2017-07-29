@@ -4,6 +4,12 @@ const debug           = require('debug')('HostBase'),
       StatefulEmitter = require('./StatefulEmitter')
 
 class HostBase extends StatefulEmitter {
+    /**
+     * constructor
+     *
+     * @param host - mqtt connect string
+     * @param topic - base of topic to subscribe and publish 
+     */
     constructor(host, topic) {
         super()
         this.host             = host
@@ -23,9 +29,10 @@ class HostBase extends StatefulEmitter {
         // handle statechange repoted by StatefulEmitter
         this.on('statechange', (newState, oldState) => {
             oldState = oldState || {}
+            debug('statechange', newState, oldState)
             try {
                 for (const key in newState) {
-                    if (oldState[key] !== 'undefined' && oldState[key] !== newState[key]) {
+                    if (oldState[key] !== newState[key]) {
                         debug('statechange', 'key', key, typeof key, 'newState', newState[key], typeof newState[key])
                         this.publish(key, newState[key])
                     }
