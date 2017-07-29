@@ -8,7 +8,7 @@ class HostBase extends StatefulEmitter {
      * constructor
      *
      * @param host - mqtt connect string
-     * @param topic - base of topic to subscribe and publish 
+     * @param topic - base of topic to subscribe and publish
      */
     constructor(host, topic) {
         super()
@@ -29,7 +29,7 @@ class HostBase extends StatefulEmitter {
         // handle statechange repoted by StatefulEmitter
         this.on('statechange', (newState, oldState) => {
             oldState = oldState || {}
-            debug('statechange', newState, oldState)
+            // debug('statechange', newState, oldState)
             try {
                 for (const key in newState) {
                     if (oldState[key] !== newState[key]) {
