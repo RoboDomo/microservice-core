@@ -19,7 +19,7 @@ class StatefulEmitter extends EventEmitter {
 
     set state(value) {
         const oldState = this._state,
-              newState = Object.assign(oldState || {}, value)
+              newState = Object.assign({}, oldState || {}, value)
 
         this._state = newState
         this.emit('statechange', newState, oldState)
