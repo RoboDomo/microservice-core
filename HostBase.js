@@ -9,22 +9,24 @@ class HostBase extends StatefulEmitter {
      *
      * @param host - mqtt connect string
      * @param topic - base of topic to subscribe and publish
+     * @param custom - true if parent will handle it's own messages
      */
-    constructor(host, topic) {
+    constructor(host, topic, custom) {
         super()
         this.host             = host
         this.topic            = topic
         this.setRoot          = topic + '/set/'
         this.setRootLength    = this.setRoot.length
         this.statusRoot       = topic + '/status/'
-        this.statusRootLength = this.statusRoot.length
 
         const client = this.client = MQTT.connect(this.host)
         debug(this.host, this.topic, 'subscribe', (this.setRoot + '#'))
-        client.on('connect', () => {
-            debug(this.topic, 'connect', 'topic', this.setRoot + '#')
-            client.subscribe(this.setRoot + '#')
-        })
+        if (!custom) {
+            client.on('connect', () => {
+                debug(this.topic, 'connect', 'topic', this.setRoot + '#')
+                client.subscribe(this.setRoot + '#')
+            })
+        }
 
         // handle statechange repoted by StatefulEmitter
         this.on('statechange', (newState, oldState) => {
@@ -43,18 +45,20 @@ class HostBase extends StatefulEmitter {
             }
         })
 
-        client.on('message', async (topic, message) => {
-            try {
-                if (message.indexOf('exception') !== -1) {
-                    return
+        if (!custom) {
+            client.on('message', async (topic, message) => {
+                try {
+                    if (message.indexOf('exception') !== -1) {
+                        return
+                    }
+                    debug('onMessage', topic, message.toString())
+                    await this.command(topic.substr(this.setRootLength), message.toString())
                 }
-                debug('onMessage', topic, message.toString())
-                await this.command(topic.substr(this.setRoot.length), message.toString())
-            }
-            catch (e) {
-                this.exception(e)
-            }
-        })
+                catch (e) {
+                    this.exception(e)
+                }
+            })
+        }
     }
 
     publish(key, value) {
