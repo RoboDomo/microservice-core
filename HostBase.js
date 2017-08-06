@@ -1,7 +1,7 @@
-// Microservice HostBase
+// Microservice Vore HostBase
 const debug           = require('debug')('HostBase'),
       MQTT            = require('mqtt'),
-      StatefulEmitter = require('./StatefulEmitter')
+      StatefulEmitter = require('./lib/StatefulEmitter')
 
 class HostBase extends StatefulEmitter {
     /**
