@@ -1,26 +1,26 @@
 {
   "name": "microservice-core",
   "version": "1.0.0",
-  "description": "autodomo microservice core library",
+  "description": "robodomo microservice core library",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/autodomo/microservice-core.git"
+    "url": "git+https://github.com/robodomo/microservice-core.git"
   },
   "keywords": [
     "microservice",
     "library",
-    "autodomo"
+    "robodomo"
   ],
   "author": "Michael Schwartz",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/autodomo/microservice-core/issues"
+    "url": "https://github.com/robodomo/microservice-core/issues"
   },
-  "homepage": "https://github.com/autodomo/microservice-core#readme",
+  "homepage": "https://github.com/robodomo/microservice-core#readme",
   "dependencies": {
     "debug": "^2.6.8",
     "mqtt": "^2.9.3"

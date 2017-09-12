@@ -1,2 +1,2 @@
 # microservice-core
-Shared class library for implementing autodomo microservices
+Shared class library for implementing robodomo microservices
