@@ -1,4 +1,4 @@
 exports = {
-    HostBase:        require('./HostBase'),
-    StatefulEmitter: require('./lib/StatefulEmitter'),
+  HostBase:        require('./HostBase'),
+  StatefulEmitter: require('./lib/StatefulEmitter'),
 }
