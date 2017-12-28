@@ -23,6 +23,6 @@
   "homepage": "https://github.com/robodomo/microservice-core#readme",
   "dependencies": {
     "debug": "^2.6.8",
-    "mqtt": "^2.9.3"
+    "mqtt": "^2.15.0"
   }
 }
