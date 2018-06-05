@@ -27,7 +27,7 @@ class HostBase extends StatefulEmitter {
         console.log("MQTT CONNECT ERROR", e);
       });
       client.on("connect", () => {
-        debug(this.topic, "connect", "topic", this.setRoot + "#");
+        debug(this.topic, "MQTT CONNECT SUCCESS", "topic", this.setRoot + "#");
         client.subscribe(this.setRoot + "#");
       });
     }
