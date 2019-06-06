@@ -29,7 +29,6 @@ class HostBase extends StatefulEmitter {
     super();
     this.host = host;
     this.topic = topic;
-    this._config = null;
     this.setRoot = topic + "/set/";
     this.setRootLength = this.setRoot.length;
     this.statusRoot = topic + "/status/";
@@ -88,39 +87,6 @@ class HostBase extends StatefulEmitter {
     }
   }
 
-  //
-  // read config from MongoDB
-  // use:
-  // const Config = await this.config(); // try/catch for error handling!
-  //
-  config() {
-    if (this._config) {
-      return Promise.resolve(this._config);
-    }
-    const MongoClient = require("mongodb").MongoClient,
-      url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
-
-    return new Promise(async (reject, resolve) => {
-      MongoClient.connect(url, { useNewUrlParser: true }, async function(
-        err,
-        database
-      ) {
-        if (err) {
-          return reject(err);
-        }
-        try {
-          this._config = await database
-            .db("settings")
-            .collection("config")
-            .findOne({ _id: "config" });
-          resolve(this._config);
-        } catch (e) {
-          reject(err);
-        }
-      });
-    });
-  }
-
   publish(key, value) {
     const topic = this.statusRoot + key,
       o = {};
@@ -146,5 +112,35 @@ class HostBase extends StatefulEmitter {
     }
   }
 }
+
+//
+// read config from MongoDB (this is a static method)
+// use:
+// const Config = await HostBase.config(); // try/catch for error handling!
+//
+HostBase.config = () => {
+  const MongoClient = require("mongodb").MongoClient,
+    url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
+
+  return new Promise(async (reject, resolve) => {
+    MongoClient.connect(url, { useNewUrlParser: true }, async function(
+      err,
+      database
+    ) {
+      if (err) {
+        return reject(err);
+      }
+      try {
+        const config = await database
+          .db("settings")
+          .collection("config")
+          .findOne({ _id: "config" });
+        resolve(config);
+      } catch (e) {
+        reject(err);
+      }
+    });
+  });
+};
 
 module.exports = HostBase;
