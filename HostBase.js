@@ -1,7 +1,21 @@
 // Microservice Vore HostBase
 const debug = require("debug")("HostBase"),
+  console = require("console"),
   MQTT = require("mqtt"),
   StatefulEmitter = require("./lib/StatefulEmitter");
+
+/**
+ * handler for unhandled rejected promises.  This should never really get called, but we might expect some
+ * node_module we depend on to be poorly written.
+ */
+process.on("unhandledRejection", function(reason, p) {
+  console.log(
+    "Possibly Unhandled Rejection at: Promise ",
+    p,
+    " reason: ",
+    reason
+  );
+});
 
 class HostBase extends StatefulEmitter {
   /**
@@ -15,6 +29,7 @@ class HostBase extends StatefulEmitter {
     super();
     this.host = host;
     this.topic = topic;
+    this._config = null;
     this.setRoot = topic + "/set/";
     this.setRootLength = this.setRoot.length;
     this.statusRoot = topic + "/status/";
@@ -71,6 +86,39 @@ class HostBase extends StatefulEmitter {
         }
       });
     }
+  }
+
+  //
+  // read config from MongoDB
+  // use:
+  // const Config = await this.config(); // try/catch for error handling!
+  //
+  config() {
+    if (this._config) {
+      return Promise.resolve(this._config);
+    }
+    const MongoClient = require("mongodb").MongoClient,
+      url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
+
+    return new Promise(async (reject, resolve) => {
+      MongoClient.connect(url, { useNewUrlParser: true }, async function(
+        err,
+        database
+      ) {
+        if (err) {
+          return reject(err);
+        }
+        try {
+          this._config = await database
+            .db("settings")
+            .collection("config")
+            .findOne({ _id: "config" });
+          resolve(this._config);
+        } catch (e) {
+          reject(err);
+        }
+      });
+    });
   }
 
   publish(key, value) {
