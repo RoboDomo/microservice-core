@@ -10,10 +10,10 @@ const debug = require("debug")("HostBase"),
  */
 process.on("unhandledRejection", function(reason, p) {
   console.log(
-    "Possibly Unhandled Rejection at: Promise ",
-    p,
     " reason: ",
-    reason
+    reason,
+    "Unhandled Promise Rejection at: Promise ",
+    p
   );
 });
 
@@ -122,7 +122,7 @@ HostBase.config = () => {
   const MongoClient = require("mongodb").MongoClient,
     url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
 
-  return new Promise(async (reject, resolve) => {
+  return new Promise(async (resolve, reject) => {
     MongoClient.connect(url, { useNewUrlParser: true }, async function(
       err,
       database
