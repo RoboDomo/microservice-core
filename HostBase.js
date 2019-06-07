@@ -51,6 +51,7 @@ class HostBase extends StatefulEmitter {
       // debug('statechange', newState, oldState)
       try {
         for (const key in newState) {
+          // Ignore mongodb's generated _id field.  Clients don't need to see this.
           if (key === "_id") {
             continue;
           }
