@@ -51,6 +51,9 @@ class HostBase extends StatefulEmitter {
       // debug('statechange', newState, oldState)
       try {
         for (const key in newState) {
+          if (key === "_id") {
+            continue;
+          }
           if (oldState[key] !== newState[key]) {
             //            debug(
             //              "statechange",
