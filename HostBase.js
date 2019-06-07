@@ -1,4 +1,4 @@
-// Microservice Vore HostBase
+// Microservice Core HostBase
 const debug = require("debug")("HostBase"),
   console = require("console"),
   MQTT = require("mqtt"),
