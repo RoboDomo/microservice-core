@@ -15,6 +15,8 @@ process.on("unhandledRejection", function(reason, p) {
     "Unhandled Promise Rejection at: Promise ",
     p
   );
+  // maybe this should exit so forever will restart.
+  // unhandled promise rejection is likely a fatal error.
 });
 
 class HostBase extends StatefulEmitter {
@@ -39,9 +41,11 @@ class HostBase extends StatefulEmitter {
       client.on("error", e => {
         console.log("MQTT CONNECT ERROR", e);
       });
+
       client.on("connect", () => {
         debug(this.topic, "MQTT CONNECT SUCCESS", "topic", this.setRoot + "#");
         client.subscribe(this.setRoot + "#");
+        // TODO: maybe we should subscribe to settings topic and exit if a new settings is received?
       });
     }
 
@@ -117,12 +121,8 @@ class HostBase extends StatefulEmitter {
   }
 }
 
-//
-// read config from MongoDB (this is a static method)
-// use:
-// const Config = await HostBase.config(); // try/catch for error handling!
-//
-HostBase.config = () => {
+// get a setting, by name, from mongodb settings database, config collection
+HostBase.getSetting = setting => {
   const MongoClient = require("mongodb").MongoClient,
     url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
 
@@ -138,13 +138,48 @@ HostBase.config = () => {
         const config = await database
           .db("settings")
           .collection("config")
-          .findOne({ _id: "config" });
+          .findOne({ _id: setting });
         resolve(config);
       } catch (e) {
         reject(err);
       }
     });
   });
+};
+
+// set a setting (value), by name, in mongodb settings database, config collection
+HostBase.putSetting = (setting, value) => {
+  const MongoClient = require("mongodb").MongoClient,
+    url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
+
+  return new Promise(async (resolve, reject) => {
+    MongoClient.connect(url, { useNewUrlParser: true }, async function(
+      err,
+      database
+    ) {
+      if (err) {
+        return reject(err);
+      }
+      try {
+        const config = await database
+          .db("settings")
+          .collection("config")
+          .replaceOne({ _id: setting }, value);
+        resolve(config);
+      } catch (e) {
+        reject(err);
+      }
+    });
+  });
+};
+
+//
+// read config from MongoDB (this is a static method)
+// use:
+// const Config = await HostBase.config(); // try/catch for error handling!
+//
+HostBase.config = () => {
+  return HostBase.getSetting("config");
 };
 
 module.exports = HostBase;
