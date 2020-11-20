@@ -8,7 +8,7 @@ const debug = require("debug")("HostBase"),
  * handler for unhandled rejected promises.  This should never really get called, but we might expect some
  * node_module we depend on to be poorly written.
  */
-process.on("unhandledRejection", function (reason, p) {
+process.on("unhandledRejection", function(reason, p) {
   console.log(
     " reason: ",
     reason,
@@ -34,12 +34,12 @@ class HostBase extends StatefulEmitter {
     this.setRoot = topic + "/set/";
     this.setRootLength = this.setRoot.length;
     this.statusRoot = topic + "/status/";
-    this.alert(this.host.name, "Running");
+    this.alerts = [];
 
     const client = (this.client = MQTT.connect(this.host));
     debug(this.host, this.topic, "subscribe", this.setRoot + "#");
     if (!custom) {
-      client.on("error", (e) => {
+      client.on("error", e => {
         this.exception("MQTT CONNECT ERROR", e);
       });
 
@@ -56,8 +56,8 @@ class HostBase extends StatefulEmitter {
       // debug('statechange', newState, oldState)
       try {
         for (const key in newState) {
-          // Ignore mongodb's generated _id field.  Clients don't need to see this.
           if (key === "_id") {
+            // Ignore mongodb's generated _id field.  Clients don't need to see this.
             continue;
           }
           if (oldState[key] !== newState[key]) {
@@ -98,6 +98,35 @@ class HostBase extends StatefulEmitter {
     }
   }
 
+  /**
+   * publishAlert(packet);
+   *
+   * Add packet to alerts queue.  If queue runner is not running, then run it
+   */
+  async publishAlert(packet) {
+    this.alerts.push(packet);
+    if (this.alert_handle) {
+      // queue runner is running
+      return;
+    }
+
+    this.alert_handle = setInterval(() => {
+      // queue runner;
+      let packet;
+      while ((packet = this.alerts.pop())) {
+        try {
+          this.client.publish("alert", packet, {
+            retain: false
+          });
+        } catch (e) {
+          console.log(this.host, "exception publishAlert() ", e);
+        }
+      }
+      clearInterval(this.alert_handle);
+      this.alert_handle = null;
+    });
+  }
+
   publish(key, value) {
     const topic = this.statusRoot + key,
       o = {};
@@ -106,7 +135,7 @@ class HostBase extends StatefulEmitter {
 
     //    debug("publish", "topic", topic, "value", value);
     this.client.publish(topic, JSON.stringify(value), {
-      retain: true,
+      retain: true
     });
   }
 
@@ -118,18 +147,11 @@ class HostBase extends StatefulEmitter {
       setRoot: this.setRoot,
       statusRoot: this.statusRoot,
       title: title,
-      message: message,
+      message: message
     });
 
-    //    console.log(this.host, "alert", packet);
-
-    try {
-      this.client.publish("alert", packet, {
-        retain: false,
-      });
-    } catch (e) {
-      console.log(this.host, "exception alert() ", e);
-    }
+    debug("alert", packet);
+    this.publishAlert(packet);
   }
 
   warn(title, ...message) {
@@ -140,18 +162,11 @@ class HostBase extends StatefulEmitter {
       setRoot: this.setRoot,
       statusRoot: this.statusRoot,
       title: title,
-      message: message,
+      message: message
     });
 
-    //    console.log(this.host, "alert", packet);
-
-    try {
-      this.client.publish("alert", packet, {
-        retain: false,
-      });
-    } catch (e) {
-      console.log(this.host, "exception alert() ", e);
-    }
+    debug("warn", packet);
+    this.publishAlert(packet);
   }
 
   exception(e) {
@@ -173,12 +188,12 @@ class HostBase extends StatefulEmitter {
 }
 
 // get a setting, by name, from mongodb settings database, config collection
-HostBase.getSetting = (setting) => {
+HostBase.getSetting = setting => {
   const MongoClient = require("mongodb").MongoClient,
     url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
 
   return new Promise(async (resolve, reject) => {
-    MongoClient.connect(url, { useNewUrlParser: true }, async function (
+    MongoClient.connect(url, { useNewUrlParser: true }, async function(
       err,
       database
     ) {
@@ -190,9 +205,9 @@ HostBase.getSetting = (setting) => {
           .db("settings")
           .collection("config")
           .findOne({ _id: setting });
-        resolve(config);
+        return resolve(config);
       } catch (e) {
-        reject(err);
+        return reject(err);
       }
     });
   });
@@ -204,7 +219,7 @@ HostBase.putSetting = (setting, value) => {
     url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
 
   return new Promise(async (resolve, reject) => {
-    MongoClient.connect(url, { useNewUrlParser: true }, async function (
+    MongoClient.connect(url, { useNewUrlParser: true }, async function(
       err,
       database
     ) {
@@ -216,9 +231,9 @@ HostBase.putSetting = (setting, value) => {
           .db("settings")
           .collection("config")
           .replaceOne({ _id: setting }, value);
-        resolve(config);
+        return resolve(config);
       } catch (e) {
-        reject(err);
+        return reject(err);
       }
     });
   });
@@ -233,4 +248,5 @@ HostBase.config = () => {
   return HostBase.getSetting("config");
 };
 
+//
 module.exports = HostBase;
