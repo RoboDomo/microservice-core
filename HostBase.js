@@ -34,6 +34,7 @@ class HostBase extends StatefulEmitter {
     this.setRoot = topic + "/set/";
     this.setRootLength = this.setRoot.length;
     this.statusRoot = topic + "/status/";
+    this.alert(this.host.name, "Running");
 
     const client = (this.client = MQTT.connect(this.host));
     debug(this.host, this.topic, "subscribe", this.setRoot + "#");
@@ -45,7 +46,6 @@ class HostBase extends StatefulEmitter {
       client.on("connect", () => {
         debug(this.topic, "MQTT CONNECT SUCCESS", "topic", this.setRoot + "#");
         client.subscribe(this.setRoot + "#");
-        this.alert(this.host, this.topic, "connected");
         // TODO: maybe we should subscribe to settings topic and exit if a new settings is received?
       });
     }
@@ -104,7 +104,7 @@ class HostBase extends StatefulEmitter {
 
     o[key] = value;
 
-//    debug("publish", "topic", topic, "value", value);
+    //    debug("publish", "topic", topic, "value", value);
     this.client.publish(topic, JSON.stringify(value), {
       retain: true,
     });
@@ -112,6 +112,7 @@ class HostBase extends StatefulEmitter {
 
   alert(title, ...message) {
     const packet = JSON.stringify({
+      type: "alert",
       host: this.host,
       topic: this.topic,
       setRoot: this.setRoot,
@@ -120,7 +121,29 @@ class HostBase extends StatefulEmitter {
       message: message,
     });
 
-//    console.log(this.host, "alert", packet);
+    //    console.log(this.host, "alert", packet);
+
+    try {
+      this.client.publish("alert", packet, {
+        retain: false,
+      });
+    } catch (e) {
+      console.log(this.host, "exception alert() ", e);
+    }
+  }
+
+  warn(title, ...message) {
+    const packet = JSON.stringify({
+      type: "warn",
+      host: this.host,
+      topic: this.topic,
+      setRoot: this.setRoot,
+      statusRoot: this.statusRoot,
+      title: title,
+      message: message,
+    });
+
+    //    console.log(this.host, "alert", packet);
 
     try {
       this.client.publish("alert", packet, {
@@ -136,6 +159,16 @@ class HostBase extends StatefulEmitter {
     // we don't want to retain a bunch of exception messages
     // TODO: clear exception message on app start
     this.alert(this.statusRoot + "exception:" + e.stack);
+  }
+
+  abort(...message) {
+    alert("ABORT", this.host.name, message);
+    process.exit(0);
+  }
+
+  exit(...message) {
+    alert("EXIT", this.host.name, message);
+    process.exit(0);
   }
 }
 
