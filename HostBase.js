@@ -8,7 +8,7 @@ const debug = require("debug")("HostBase"),
  * handler for unhandled rejected promises.  This should never really get called, but we might expect some
  * node_module we depend on to be poorly written.
  */
-process.on("unhandledRejection", function(reason, p) {
+process.on("unhandledRejection", function (reason, p) {
   console.log(
     " reason: ",
     reason,
@@ -38,7 +38,7 @@ class HostBase extends StatefulEmitter {
     const client = (this.client = MQTT.connect(this.host));
     debug(this.host, this.topic, "subscribe", this.setRoot + "#");
     if (!custom) {
-      client.on("error", e => {
+      client.on("error", (e) => {
         console.log("MQTT CONNECT ERROR", e);
       });
 
@@ -84,10 +84,12 @@ class HostBase extends StatefulEmitter {
             return;
           }
           //          debug("onMessage", topic, message.toString());
-          await this.command(
-            topic.substr(this.setRootLength),
-            message.toString()
-          );
+          const command = topic.substr(this.setRootLength);
+          if (command === "_RESTART_") {
+            debug(this.host, "Got restart message, restarting");
+            process.exit(0);
+          }
+          await this.command(command, message.toString());
         } catch (e) {
           this.exception(e);
         }
@@ -103,7 +105,7 @@ class HostBase extends StatefulEmitter {
 
     debug("publish", "topic", topic, "value", value);
     this.client.publish(topic, JSON.stringify(value), {
-      retain: true
+      retain: true,
     });
   }
 
@@ -113,7 +115,7 @@ class HostBase extends StatefulEmitter {
     // TODO: clear exception message on app start
     try {
       this.client.publish(this.statusRoot + "exception", e, {
-        retain: false
+        retain: false,
       });
     } catch (e) {
       debug("exception fault", this.setRoot, this.setRoot + "exception", e);
@@ -122,12 +124,12 @@ class HostBase extends StatefulEmitter {
 }
 
 // get a setting, by name, from mongodb settings database, config collection
-HostBase.getSetting = setting => {
+HostBase.getSetting = (setting) => {
   const MongoClient = require("mongodb").MongoClient,
     url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
 
   return new Promise(async (resolve, reject) => {
-    MongoClient.connect(url, { useNewUrlParser: true }, async function(
+    MongoClient.connect(url, { useNewUrlParser: true }, async function (
       err,
       database
     ) {
@@ -153,7 +155,7 @@ HostBase.putSetting = (setting, value) => {
     url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
 
   return new Promise(async (resolve, reject) => {
-    MongoClient.connect(url, { useNewUrlParser: true }, async function(
+    MongoClient.connect(url, { useNewUrlParser: true }, async function (
       err,
       database
     ) {
