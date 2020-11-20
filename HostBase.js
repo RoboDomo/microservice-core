@@ -45,7 +45,7 @@ class HostBase extends StatefulEmitter {
       client.on("connect", () => {
         debug(this.topic, "MQTT CONNECT SUCCESS", "topic", this.setRoot + "#");
         client.subscribe(this.setRoot + "#");
-        this.alert(this.host, this.topic, "connected")
+        this.alert(this.host, this.topic, "connected");
         // TODO: maybe we should subscribe to settings topic and exit if a new settings is received?
       });
     }
@@ -104,7 +104,7 @@ class HostBase extends StatefulEmitter {
 
     o[key] = value;
 
-    debug("publish", "topic", topic, "value", value);
+//    debug("publish", "topic", topic, "value", value);
     this.client.publish(topic, JSON.stringify(value), {
       retain: true,
     });
@@ -117,10 +117,10 @@ class HostBase extends StatefulEmitter {
       setRoot: this.setRoot,
       statusRoot: this.statusRoot,
       title: title,
-      message: message
+      message: message,
     });
 
-    console.log(this.host, "alert", packet);
+//    console.log(this.host, "alert", packet);
 
     try {
       this.client.publish("alert", packet, {
