@@ -46,7 +46,7 @@ class HostBase extends StatefulEmitter {
       client.on("connect", () => {
         debug(this.topic, "MQTT CONNECT SUCCESS", "topic", this.setRoot + "#");
         client.subscribe(this.setRoot + "#");
-        client.subscribe( `${topic}/reset/#`);
+        client.subscribe(`${topic}/reset/#`);
         // TODO: maybe we should subscribe to settings topic and exit if a new settings is received?
       });
     }
@@ -87,9 +87,9 @@ class HostBase extends StatefulEmitter {
           }
           console.log("onMessage", topic, message.toString());
           const command = topic.substr(this.setRootLength);
-          if (message.toString()  === "__RESTART__") {
+          if (message.toString() === "__RESTART__") {
             debug(this.host, "Got restart message, restarting");
-            this.exit(process.title, "restarting");
+            this.exit(process.title, `${this.host.name} restarting`);
             return;
             // process.exit(0);
           }
@@ -180,7 +180,7 @@ class HostBase extends StatefulEmitter {
   }
 
   abort(...message) {
-    this.alert("ABORT", this.host.name, ...message);
+    this.alert("ABORT", ...message);
     setTimeout(() => {
       if (this.alerts.length == 0) {
         process.exit(0);
@@ -189,7 +189,7 @@ class HostBase extends StatefulEmitter {
   }
 
   exit(...message) {
-    this.alert("EXIT", this.host.name, ...message);
+    this.alert("EXIT", ...message);
     setTimeout(() => {
       if (this.alerts.length == 0) {
         process.exit(0);
