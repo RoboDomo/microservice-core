@@ -87,7 +87,7 @@ class HostBase extends StatefulEmitter {
           }
           console.log("onMessage", topic, message.toString());
           const command = topic.substr(this.setRootLength);
-          if (command === "_RESTART_") {
+          if (message === "_RESTART_") {
             debug(this.host, "Got restart message, restarting");
             process.exit(0);
           }
