@@ -81,6 +81,7 @@ class HostBase extends StatefulEmitter {
     });
 
     if (!custom) {
+      console.log("NOT CUSTOM");
       client.on("message", async (topic, message) => {
         try {
           if (message.indexOf("exception") !== -1) {
