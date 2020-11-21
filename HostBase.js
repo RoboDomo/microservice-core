@@ -180,7 +180,7 @@ class HostBase extends StatefulEmitter {
   }
 
   abort(...message) {
-    this.alert("ABORT", this.host.name, message);
+    this.alert("ABORT", this.host.name, ...message);
     setTimeout(() => {
       if (this.alerts.length == 0) {
         process.exit(0);
@@ -189,7 +189,7 @@ class HostBase extends StatefulEmitter {
   }
 
   exit(...message) {
-    this.alert("EXIT", this.host.name, message);
+    this.alert("EXIT", this.host.name, ...message);
     setTimeout(() => {
       if (this.alerts.length == 0) {
         process.exit(0);
