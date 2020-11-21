@@ -90,6 +90,7 @@ class HostBase extends StatefulEmitter {
           if (message.toString()  === "__RESTART__") {
             debug(this.host, "Got restart message, restarting");
             this.exit(process.title);
+            return;
             // process.exit(0);
           }
           await this.command(command, message.toString());
