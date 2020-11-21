@@ -44,7 +44,7 @@ class HostBase extends StatefulEmitter {
       });
 
       client.on("connect", () => {
-        debug(this.topic, "MQTT CONNECT SUCCESS", "topic", this.setRoot + "#");
+        debug(this.topic, "MQTT CONNECT SUCCESS", "topic", topic, this.setRoot + "#");
         client.subscribe(this.setRoot + "#");
         client.subscribe(`${topic}/reset/#`);
         this.alert("Notice", `${process.title} running`);
