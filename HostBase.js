@@ -177,12 +177,12 @@ class HostBase extends StatefulEmitter {
   }
 
   abort(...message) {
-    alert("ABORT", this.host.name, message);
+    this.alert("ABORT", this.host.name, message);
     process.exit(0);
   }
 
   exit(...message) {
-    alert("EXIT", this.host.name, message);
+    this.alert("EXIT", this.host.name, message);
     process.exit(0);
   }
 }
