@@ -84,7 +84,7 @@ class HostBase extends StatefulEmitter {
           if (message.indexOf("exception") !== -1) {
             return;
           }
-          //          debug("onMessage", topic, message.toString());
+          debug("onMessage", topic, message.toString());
           const command = topic.substr(this.setRootLength);
           if (command === "_RESTART_") {
             debug(this.host, "Got restart message, restarting");
