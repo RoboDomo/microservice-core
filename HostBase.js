@@ -38,7 +38,7 @@ class HostBase extends StatefulEmitter {
 
     console.log("host", this.host);
     const client = (this.client = MQTT.connect(this.host));
-    debug(this.host, this.topic, "subscribe", this.setRoot + "#");
+
     if (!custom) {
       client.on("error", e => {
         this.exception("MQTT CONNECT ERROR", e);
@@ -47,7 +47,8 @@ class HostBase extends StatefulEmitter {
       client.on("connect", () => {
         debug(this.topic, "MQTT CONNECT SUCCESS", "topic", topic, this.setRoot + "#");
         client.subscribe(this.setRoot + "#");
-        client.subscribe(`${topic}/reset/#`);
+        const t = topic.split('/');
+        client.subscribe(`${t[0]}/reset/#`);
         this.alert("Notice", `${process.title} running`);
         // TODO: maybe we should subscribe to settings topic and exit if a new settings is received?
       });
