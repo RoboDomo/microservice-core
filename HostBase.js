@@ -198,7 +198,10 @@ class HostBase extends StatefulEmitter {
 // get a setting, by name, from mongodb settings database, config collection
 HostBase.getSetting = setting => {
   const MongoClient = require("mongodb").MongoClient,
-    url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
+    url =
+      process.env.ROBODOMO_MONGODB ||
+      process.env.MONGO_URL ||
+      "mongodb://ha:27017";
 
   return new Promise(async (resolve, reject) => {
     MongoClient.connect(url, { useNewUrlParser: true }, async function(
@@ -224,7 +227,10 @@ HostBase.getSetting = setting => {
 // set a setting (value), by name, in mongodb settings database, config collection
 HostBase.putSetting = (setting, value) => {
   const MongoClient = require("mongodb").MongoClient,
-    url = process.env.ROBODOMO_MONGODB || "mongodb://robodomo:27017";
+    url =
+      process.env.ROBODOMO_MONGODB ||
+      process.env.MONGO_URL ||
+      "mongodb://ha:27017";
 
   return new Promise(async (resolve, reject) => {
     MongoClient.connect(url, { useNewUrlParser: true }, async function(
