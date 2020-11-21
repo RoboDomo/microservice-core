@@ -46,6 +46,7 @@ class HostBase extends StatefulEmitter {
       client.on("connect", () => {
         debug(this.topic, "MQTT CONNECT SUCCESS", "topic", this.setRoot + "#");
         client.subscribe(this.setRoot + "#");
+        client.subscribe( `${topic}/reset/#`);
         // TODO: maybe we should subscribe to settings topic and exit if a new settings is received?
       });
     }
