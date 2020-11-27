@@ -36,7 +36,6 @@ class HostBase extends StatefulEmitter {
     this.statusRoot = topic + "/status/";
     this.alerts = [];
 
-    console.log("host", this.host);
     const client = (this.client = MQTT.connect(this.host));
 
     if (!custom) {
