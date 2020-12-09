@@ -29,6 +29,7 @@ class HostBase extends StatefulEmitter {
    */
   constructor(host, topic, custom) {
     super();
+    this.retain = true;
     this.host = host;
     this.topic = topic;
     this.setRoot = topic + "/set/";
@@ -121,7 +122,7 @@ class HostBase extends StatefulEmitter {
       while ((packet = this.alerts.pop())) {
         try {
           this.client.publish("alert", packet, {
-            retain: false
+            retain: this.retain
           });
         } catch (e) {
           console.log(this.host, "exception publishAlert() ", e);
