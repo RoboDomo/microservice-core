@@ -8,7 +8,7 @@ const debug = require("debug")("HostBase"),
  * handler for unhandled rejected promises.  This should never really get called, but we might expect some
  * node_module we depend on to be poorly written.
  */
-process.on("unhandledRejection", function(reason, p) {
+process.on("unhandledRejection", function (reason, p) {
   console.log(
     " reason: ",
     reason,
@@ -40,16 +40,24 @@ class HostBase extends StatefulEmitter {
     const client = (this.client = MQTT.connect(this.host));
 
     if (!custom) {
-      client.on("error", e => {
+      client.on("error", (e) => {
         this.exception("MQTT CONNECT ERROR", e);
       });
 
       client.on("connect", () => {
-        debug(this.topic, "MQTT CONNECT SUCCESS", "topic", topic, this.setRoot + "#");
+        debug(
+          this.topic,
+          "MQTT CONNECT SUCCESS",
+          "topic",
+          topic,
+          this.setRoot + "#"
+        );
         client.subscribe(this.setRoot + "#");
-        const t = topic.split('/');
+        const t = topic.split("/");
         client.subscribe(`${t[0]}/reset/#`);
-        this.alert("Notice", `${process.title} running`);
+        if (!custom) {
+          this.alert("Notice", `${process.title} running`);
+        }
         // TODO: maybe we should subscribe to settings topic and exit if a new settings is received?
       });
     }
@@ -122,7 +130,7 @@ class HostBase extends StatefulEmitter {
       while ((packet = this.alerts.pop())) {
         try {
           this.client.publish("alert", packet, {
-            retain: this.retain
+            retain: this.retain,
           });
         } catch (e) {
           console.log(this.host, "exception publishAlert() ", e);
@@ -141,7 +149,7 @@ class HostBase extends StatefulEmitter {
 
     //    debug("publish", "topic", topic, "value", value);
     this.client.publish(topic, JSON.stringify(value), {
-      retain: true
+      retain: true,
     });
   }
 
@@ -153,7 +161,7 @@ class HostBase extends StatefulEmitter {
       setRoot: this.setRoot,
       statusRoot: this.statusRoot,
       title: title,
-      message: message
+      message: message,
     });
 
     debug("alert", packet);
@@ -168,7 +176,7 @@ class HostBase extends StatefulEmitter {
       setRoot: this.setRoot,
       statusRoot: this.statusRoot,
       title: title,
-      message: message
+      message: message,
     });
 
     debug("warn", packet);
@@ -202,7 +210,7 @@ class HostBase extends StatefulEmitter {
 }
 
 // get a setting, by name, from mongodb settings database, config collection
-HostBase.getSetting = setting => {
+HostBase.getSetting = (setting) => {
   const MongoClient = require("mongodb").MongoClient,
     url =
       process.env.ROBODOMO_MONGODB ||
@@ -210,23 +218,24 @@ HostBase.getSetting = setting => {
       "mongodb://ha:27017";
 
   return new Promise(async (resolve, reject) => {
-    MongoClient.connect(url, { useNewUrlParser: true }, async function(
-      err,
-      database
-    ) {
-      if (err) {
-        return reject(err);
+    MongoClient.connect(
+      url,
+      { useNewUrlParser: true },
+      async function (err, database) {
+        if (err) {
+          return reject(err);
+        }
+        try {
+          const config = await database
+            .db("settings")
+            .collection("config")
+            .findOne({ _id: setting });
+          return resolve(config);
+        } catch (e) {
+          return reject(err);
+        }
       }
-      try {
-        const config = await database
-          .db("settings")
-          .collection("config")
-          .findOne({ _id: setting });
-        return resolve(config);
-      } catch (e) {
-        return reject(err);
-      }
-    });
+    );
   });
 };
 
@@ -239,23 +248,24 @@ HostBase.putSetting = (setting, value) => {
       "mongodb://ha:27017";
 
   return new Promise(async (resolve, reject) => {
-    MongoClient.connect(url, { useNewUrlParser: true }, async function(
-      err,
-      database
-    ) {
-      if (err) {
-        return reject(err);
+    MongoClient.connect(
+      url,
+      { useNewUrlParser: true },
+      async function (err, database) {
+        if (err) {
+          return reject(err);
+        }
+        try {
+          const config = await database
+            .db("settings")
+            .collection("config")
+            .replaceOne({ _id: setting }, value);
+          return resolve(config);
+        } catch (e) {
+          return reject(err);
+        }
       }
-      try {
-        const config = await database
-          .db("settings")
-          .collection("config")
-          .replaceOne({ _id: setting }, value);
-        return resolve(config);
-      } catch (e) {
-        return reject(err);
-      }
-    });
+    );
   });
 };
 
