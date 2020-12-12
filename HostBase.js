@@ -5,7 +5,15 @@ const debug = require("debug")("HostBase"),
   StatefulEmitter = require("./lib/StatefulEmitter");
 
 /**
- * handler for unhandled rejected promises.  This should never really get called, but we might expect some
+ * Handler for ^C 
+ */
+process.on("SIGINT", () => {
+  debug("*** Exit on SIGINT");
+  process.exit(0);
+});
+
+/**
+ * Handler for unhandled rejected promises.  This should never really get called, but we might expect some
  * node_module we depend on to be poorly written.
  */
 process.on("unhandledRejection", function (reason, p) {
