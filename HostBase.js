@@ -130,7 +130,7 @@ class HostBase extends StatefulEmitter {
       while ((packet = this.alerts.pop())) {
         try {
           this.client.publish("alert", packet, {
-            retain: this.retain,
+            retain: false,
           });
         } catch (e) {
           console.log(this.host, "exception publishAlert() ", e);
@@ -138,7 +138,7 @@ class HostBase extends StatefulEmitter {
       }
       clearInterval(this.alert_handle);
       this.alert_handle = null;
-    });
+    }, 100);
   }
 
   publish(key, value) {
