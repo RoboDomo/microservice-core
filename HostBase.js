@@ -5,7 +5,7 @@ const debug = require("debug")("HostBase"),
   StatefulEmitter = require("./lib/StatefulEmitter");
 
 /**
- * Handler for ^C 
+ * Handler for ^C
  */
 process.on("SIGINT", () => {
   debug("*** Exit on SIGINT");
@@ -159,6 +159,12 @@ class HostBase extends StatefulEmitter {
     this.client.publish(topic, JSON.stringify(value), {
       retain: true,
     });
+  }
+
+  async say(...messages) {
+    for (const message of messages) {
+      this.client.publish("say", message, { retain: false});
+    }
   }
 
   alert(title, ...message) {
