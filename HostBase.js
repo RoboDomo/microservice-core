@@ -144,7 +144,7 @@ class HostBase extends StatefulEmitter {
           console.log(this.host, "exception publishAlert() ", e);
         }
       }
-      this.clearTopic("alert");
+      this.client.publish("alert", null);
       clearInterval(this.alert_handle);
       this.alert_handle = null;
     }, 100);
