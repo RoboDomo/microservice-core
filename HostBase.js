@@ -63,9 +63,7 @@ class HostBase extends StatefulEmitter {
         client.subscribe(this.setRoot + "#");
         const t = topic.split("/");
         client.subscribe(`${t[0]}/reset/#`);
-        if (!custom) {
-          this.alert("Notice", `${process.title} running`);
-        }
+        this.alert("Notice", `${process.title} running`);
         // TODO: maybe we should subscribe to settings topic and exit if a new settings is received?
       });
     }
