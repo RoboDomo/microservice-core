@@ -224,7 +224,7 @@ class HostBase extends StatefulEmitter {
 
   exit(...message) {
     this.alert("EXIT", ...message);
-    setTimeout(() => {
+    setInterval(() => {
       if (this.alerts.length == 0) {
         console.log("exiting, alerts length: ", this.alerts.length);
         console.log("exit!");
