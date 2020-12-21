@@ -113,8 +113,9 @@ class HostBase extends StatefulEmitter {
             this.exit(`${process.title} restarting ${topic}`);
             return;
             // process.exit(0);
+          } else {
+            await this.command(command, message.toString());
           }
-          await this.command(command, message.toString());
         } catch (e) {
           this.exception(e);
         }
