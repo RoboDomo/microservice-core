@@ -108,7 +108,7 @@ class HostBase extends StatefulEmitter {
           const command = topic.substr(this.setRootLength);
           if (message.toString() === "__RESTART__") {
             console.log(this.host, "Got restart message, restarting");
-            client.publish(topic, null, { retain: false});
+            client.publish(topic, null, { retain: false });
             this.exit(`${process.title} restarting`);
             return;
             // process.exit(0);
@@ -135,8 +135,10 @@ class HostBase extends StatefulEmitter {
 
     this.alert_handle = setInterval(async () => {
       // queue runner;
+      console.log("queue runner", this.alerts.length);
       let packet;
       while ((packet = this.alerts.pop())) {
+        console.log("queue runner pop", this.alerts.length);
         try {
           this.client.publish("alert", packet, {
             retain: false,
@@ -145,11 +147,14 @@ class HostBase extends StatefulEmitter {
           console.log(this.host, "exception publishAlert() ", e);
         }
       }
-      await this.client.publish("alert", null, { retain: false});
-      await this.client.publish("alert", null, { retain: true});
+      await this.client.publish("alert", null, { retain: false });
+      await this.client.publish("alert", null, { retain: true });
       this.client.publish("alert", null);
-      clearInterval(this.alert_handle);
-      this.alert_handle = null;
+      if (this.alerts.length === 0) {
+        console.log("ClearInterval");
+        clearInterval(this.alert_handle);
+        this.alert_handle = null;
+      }
     }, 100);
   }
 
@@ -167,7 +172,7 @@ class HostBase extends StatefulEmitter {
 
   async say(...messages) {
     for (const message of messages) {
-      this.client.publish("say", message, { retain: false});
+      this.client.publish("say", message, { retain: false });
     }
   }
 
@@ -224,8 +229,7 @@ class HostBase extends StatefulEmitter {
         console.log("exiting, alerts length: ", this.alerts.length);
         console.log("exit!");
         process.exit(0);
-      }
-      else {
+      } else {
         console.log("exiting, alerts length: ", this.alerts.length);
       }
     }, 10);
