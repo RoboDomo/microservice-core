@@ -223,6 +223,9 @@ class HostBase extends StatefulEmitter {
       if (this.alerts.length == 0) {
         process.exit(0);
       }
+      else {
+        console.log("exiting, alerts length: ", this.alerts.length);
+      }
     }, 10);
   }
 }
