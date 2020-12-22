@@ -73,6 +73,8 @@ class HostBase extends StatefulEmitter {
       oldState = oldState || {};
       // debug('statechange', newState, oldState)
       try {
+        const save = this.retain;
+        this.retain = true;
         for (const key in newState) {
           if (key === "_id") {
             // Ignore mongodb's generated _id field.  Clients don't need to see this.
@@ -91,6 +93,7 @@ class HostBase extends StatefulEmitter {
             this.publish(key, newState[key]);
           }
         }
+        this.retain = save;
       } catch (e) {
         this.exception(e);
       }
